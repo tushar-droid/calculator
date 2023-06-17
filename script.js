@@ -7,46 +7,102 @@ let res= 0;
 buttons.forEach(btn =>{
     btn.addEventListener('click', () =>{
 
-        if(btn.classList.contains('operator')){
-            if(checkIsResEmpty()){
-                setOperator(btn);
-                expression= updateExpression(btn);
-            }
-            else{
-                expression = res;
-                setOperator(btn);
-                expression= updateExpression(btn);
-            }
-
-        }
-        else if(btn.value==='ac'){
-            expression = `\u00A0`;
-            res=0;
-        }
-        else if (btn.value==='backspace'){
-            expression= expression.slice(0,-1);
-        }
-        else if(btn.value ==='='){
-            expression= expression.trim();
-            operand1=parseFloat(expression);
-            let remain= expression.replace(operand1, '');
-            operand2= parseFloat(remain.slice(1,));
-            res= operate(operand1, operand2, operator);
-            enableOperators();
-            
-        }
-        else{
-            expression= updateExpression(btn);
-        }
-
+        onKeyPress(btn);
         updateProblemDisplay(expression);   
         updateSolutionDisplay(res);
     })
 });
 
+
+function onKeyPress(btn){
+
+    if(btn.classList.contains('operator')){
+        if(checkIsResEmpty()){
+            if(btn.value=='/' || btn.value=='X'|| btn.value=='%'){
+                expression = `\u00A0`;
+                return;
+            }
+
+            setOperator(btn);
+            expression= updateExpression(btn);
+        }
+        else{
+            expression = res;
+            setOperator(btn);
+            expression= updateExpression(btn);
+        }
+
+    }
+    else if(btn.value==='ac'){
+        expression = `\u00A0`;
+        res=0;
+        enableOperators();
+    }
+    else if (btn.value==='Backspace'){
+        expression= expression.slice(0,-1);
+        if(expression.length==0){
+            expression = `\u00A0`;
+            enableOperators();
+        }
+    }
+    else if(btn.value ==='='){
+        expression= expression.trim();
+        operand1=parseFloat(expression);
+        let remain= expression.replace(operand1, '');
+        operand2= parseFloat(remain.slice(1,));
+        res= operate(operand1, operand2, operator);
+        enableOperators();
+
+        if(isNaN(res)){
+            res=0;
+        }
+        
+    }
+    else if(btn.value=='%'){
+        expression= expression.trim();
+        res= percent(parseFloat(expression),100);
+        enableOperators();
+    }
+    else{
+        expression= updateExpression(btn);
+    }
+
+}
+
+
+
 function checkIsResEmpty(){
     return res=='0';
 }
+
+
+
+document.addEventListener('keydown', (e) =>{
+    let found=false;
+    let pressed_key=''
+    if(e.key=='Enter'){
+        pressed_key="=";
+    }
+    else if(e.key =='*'){
+        pressed_key='X';
+    }
+    else{
+        pressed_key=e.key;
+    }
+    buttons.forEach(btn =>{
+        if(btn.value==pressed_key){
+            onKeyPress(btn);
+            found=true;
+        }
+        
+    });
+    if(found==true){
+        updateProblemDisplay(expression);   
+        updateSolutionDisplay(res);
+    }
+    
+})
+
 
 
 
@@ -121,4 +177,8 @@ function multiply(a,b){
 
 function divide(a,b){
     return Math.round((a/b)*10000)/10000;
+}
+
+function percent(a,b){
+    return a/b;
 }
